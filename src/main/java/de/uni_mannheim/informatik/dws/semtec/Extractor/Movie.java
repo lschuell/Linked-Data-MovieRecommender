@@ -60,6 +60,8 @@ public class Movie extends AbstractRecord<Attribute> implements Serializable {
         return id;
     }
 
+    public void setIdentifier(String id){ this.id = id; }
+
     @Override
     public String getProvenance() {
         return provenance;

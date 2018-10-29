@@ -6,11 +6,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import de.uni_mannheim.informatik.dws.semtec.Recommender.Similarity.OverlapSimilarity;
 import de.uni_mannheim.informatik.dws.winter.model.DataSet;
 import de.uni_mannheim.informatik.dws.winter.model.HashedDataSet;
 import de.uni_mannheim.informatik.dws.winter.model.defaultmodel.Attribute;
 import de.uni_mannheim.informatik.dws.winter.model.io.CSVMatchableReader;
 import de.uni_mannheim.informatik.dws.winter.preprocessing.datatypes.ValueNormalizer;
+import de.uni_mannheim.informatik.dws.winter.similarity.EqualsSimilarity;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +70,8 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
 
         else {
             if (values.length == 18 || values.length == 24) {
-                Movie m = new Movie("Movie " + rowNumber, file.getAbsolutePath());
+                //Movie m = new Movie("Movie " + rowNumber, file.getAbsolutePath());
+                Movie m = new Movie(values[0], file.getAbsolutePath());
 
                 m.setName(values[0]);
                 m.setBudget(parseLong(values[2]));
@@ -140,7 +144,7 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
     public int parseRuntime(String runtimes){
         int num = 0;
         if (!runtimes.equals("Null")){
-            String runtime = runtimes.replaceAll("^([0-9]+).*", "$1");
+            String runtime = runtimes.replaceAll("^-?([0-9]+).*", "$1");
             try {
                 num = Integer.parseInt(runtime) / 60;
                 return num;
@@ -184,7 +188,7 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
 
 
         HashedDataSet<Movie, Attribute> movies = new HashedDataSet<>();
-        new CSVMovieReader().loadFromCSV(new File("data/movies.csv"), movies);
+        new CSVMovieReader().loadFromCSV(new File("data/moviesI.csv"), movies);
 
         Collection<Movie> test = movies.get();
 
@@ -197,6 +201,7 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
             System.out.println(m.getName());
             System.out.println(String.join("|", m.getActorsWiki()));
             System.out.println(String.join("|", m.getActorsDP()));
+            System.out.println(String.join("|", m.getLanguages()));
             //System.out.println(String.join("|", m.getComposers()));
             //System.out.println(String.join("|", m.getNominations()));
             //System.out.println(String.join("|", m.getAwards()));
@@ -215,6 +220,32 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
         }
 
         System.out.println(movies.size());
+
+        Movie m = movies.getRecord("Inception");
+        System.out.println(m.getAbstractParagraph());
+        System.out.println(String.join("|", m.getActorsDP()));
+        System.out.println(String.join("|",m.getActorsWiki()));
+        System.out.println(String.join("|",m.getLanguages()));
+        System.out.println(String.join("|",m.getComposers()));
+        System.out.println(String.join("|",m.getNominations()));
+        System.out.println(String.join("|",m.getAwards()));
+        System.out.println(String.join("|",m.getAwards()));
+        System.out.println(m.getDirector());
+
+        OverlapSimilarity sim = new OverlapSimilarity();
+        System.out.println(sim.calculate(m.getGenres(), m.getGenres()));
+        System.out.println(sim.calculate(m.getActorsDP(), m.getActorsDP()));
+        System.out.println(sim.calculate(m.getActorsWiki(), m.getActorsWiki()));
+        System.out.println(sim.calculate(m.getActorsWiki(), m.getActorsDP()));
+
+        EqualsSimilarity<String> sim2 = new EqualsSimilarity<String>();
+
+        System.out.println(sim2.calculate(m.getDirector(), m.getDirector()));
+        System.out.println(sim2.calculate(null, null));
+        System.out.println(sim2.calculate(String.join("|",m.getActorsDP()), String.join("|",m.getActorsDP())));
+
+
+
 
 
 
