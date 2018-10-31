@@ -70,8 +70,8 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
 
         else {
             if (values.length == 18 || values.length == 24) {
-                //Movie m = new Movie("Movie " + rowNumber, file.getAbsolutePath());
-                Movie m = new Movie(values[0], file.getAbsolutePath());
+                Movie m = new Movie("Movie " + rowNumber, file.getAbsolutePath());
+                //Movie m = new Movie(values[0], file.getAbsolutePath());
 
                 m.setName(values[0]);
                 m.setBudget(parseLong(values[2]));
@@ -188,13 +188,21 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
 
 
         HashedDataSet<Movie, Attribute> movies = new HashedDataSet<>();
-        new CSVMovieReader().loadFromCSV(new File("data/moviesI.csv"), movies);
+        new CSVMovieReader().loadFromCSV(new File("data/movies.csv"), movies);
 
         Collection<Movie> test = movies.get();
 
         int counter = 0;
 
+        int checker=0;
+        for (Movie m : test) {
+            if (m.getGross() > 100000 || m.getAwards().size() > 0 || m.getNominations().size() > 0) {
+                checker++;
 
+            }
+        }
+
+        /*
         for (Movie m : test) {
             System.out.println("++++++++ Movie " + counter +  " +++++++++++");
             System.out.println(m.getIdentifier());
@@ -219,8 +227,12 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
 
         }
 
+        */
+
+        System.out.println(checker);
         System.out.println(movies.size());
 
+        /*
         Movie m = movies.getRecord("Inception");
         System.out.println(m.getAbstractParagraph());
         System.out.println(String.join("|", m.getActorsDP()));
@@ -231,25 +243,7 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
         System.out.println(String.join("|",m.getAwards()));
         System.out.println(String.join("|",m.getAwards()));
         System.out.println(m.getDirector());
-
-        OverlapSimilarity sim = new OverlapSimilarity();
-        System.out.println(sim.calculate(m.getGenres(), m.getGenres()));
-        System.out.println(sim.calculate(m.getActorsDP(), m.getActorsDP()));
-        System.out.println(sim.calculate(m.getActorsWiki(), m.getActorsWiki()));
-        System.out.println(sim.calculate(m.getActorsWiki(), m.getActorsDP()));
-
-        EqualsSimilarity<String> sim2 = new EqualsSimilarity<String>();
-
-        System.out.println(sim2.calculate(m.getDirector(), m.getDirector()));
-        System.out.println(sim2.calculate(null, null));
-        System.out.println(sim2.calculate(String.join("|",m.getActorsDP()), String.join("|",m.getActorsDP())));
-
-
-
-
-
-
-
+        */
 
     }
 }

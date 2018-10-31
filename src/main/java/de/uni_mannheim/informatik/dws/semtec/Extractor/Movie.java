@@ -9,8 +9,8 @@ import de.uni_mannheim.informatik.dws.winter.model.defaultmodel.Attribute;
 
 public class Movie extends AbstractRecord<Attribute> implements Serializable {
 
-    private String id;
-    private String provenance;
+    private transient String id;
+    private transient String provenance;
     private long budget;
     private long gross;
     private String name;
@@ -59,8 +59,6 @@ public class Movie extends AbstractRecord<Attribute> implements Serializable {
     public String getIdentifier() {
         return id;
     }
-
-    public void setIdentifier(String id){ this.id = id; }
 
     @Override
     public String getProvenance() {

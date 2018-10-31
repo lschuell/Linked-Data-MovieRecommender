@@ -2,7 +2,6 @@ package de.uni_mannheim.informatik.dws.semtec.Extractor;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
-
 import org.apache.jena.query.*;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import org.slf4j.Logger;
@@ -11,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -64,6 +61,10 @@ public class QueryMovieData {
     // Both
     private static final String ACTORS = "actors";
 
+    private static final String[] DBATTRS = {NAMES, LINK, BUDGET, GROSS, RUNTIMES, DIRECTOR, PRODUCERS, CINEMATOGRAPHY, DISTRIBUTORS,
+                                            SUBJECTS, STUDIOS, WRITERS, COMPOSERS, COMPANIES, LANGUAGES, COUNTRIES, ACTORS, ABSTRACT};
+
+    private static final String[] WIKIATTRS = {YEAR, GENRES, FSK, AWARDS, NOMINATIONS, ACTORS};
 
     private static String DBpediaQuery(String URI) {
         String queryString = PREFIXES +
@@ -145,11 +146,15 @@ public class QueryMovieData {
 
 
     public static String DBpediaParseExp(String toParse){
-        return toParse.replaceAll("(\\d+\\.\\d+)E(\\d+).*", "$1 $2");
+        toParse = toParse.replaceAll("(\\d+\\.\\d+)E(\\d+).*", "$1 $2");
+        toParse =  toParse.replaceAll("\\r\\n|\\r|\\n|\\*|\\t|,", "");
+        return toParse.trim();
+
     }
 
     public static String DBpediaParseResource(String toParse){
-        return toParse.replaceAll("(http://www\\.wikidata\\.org/entity/|http://(wikidata\\.)?dbpedia\\.org/resource/)(.*)","$3");
+        toParse = toParse.replaceAll("(http://www\\.wikidata\\.org/entity/|http://(wikidata\\.)?dbpedia\\.org/resource/)(.*)","$3");
+        return Cleaner(toParse);
     }
 
     public static String DBpediaParseResourceList(String toParse){
@@ -161,7 +166,13 @@ public class QueryMovieData {
         return String.join("|", parsed);
     }
 
-    private static String DBpediaParseAny(String val, String var){
+    public static String Cleaner(String toParse){
+        toParse = toParse.replaceAll("\\r\\n|\\r|\\n|\\*|\\t|,+", " ");
+        toParse = toParse.replaceAll("\\s+", " ");
+        return toParse.trim();
+    }
+
+    private static String ParseAny(String val, String var){
         switch (var) {
             case BUDGET:
             case GROSS:
@@ -169,18 +180,29 @@ public class QueryMovieData {
                 break;
             case PRODUCERS:
             case ACTORS:
+            case AWARDS:
+            case NOMINATIONS:
+            case GENRES:
             case DISTRIBUTORS:
             case WRITERS:
             case COMPOSERS:
             case COMPANIES:
             case STUDIOS:
             case SUBJECTS:
+            case NAMES:
                 val = DBpediaParseResourceList(val);
                 break;
             case DIRECTOR:
             case LINK:
             case CINEMATOGRAPHY:
                 val = DBpediaParseResource(val);
+                break;
+            case LANGUAGES:
+            case COUNTRIES:
+            case ABSTRACT:
+            case FSK:
+            case YEAR:
+                val = Cleaner(val);
                 break;
         }
         return val;
@@ -333,10 +355,6 @@ public class QueryMovieData {
             QueryExecution qexecution = QueryExecutionFactory.sparqlService(ENDDP, query);
             ((QueryEngineHTTP) qexecution).addParam("timeout", "10000");
 
-
-
-
-
             ResultSet rs = qexecution.execSelect();
 
             if (rs.hasNext()) {
@@ -347,18 +365,33 @@ public class QueryMovieData {
                 List<String> fromWiki;
                 String ID = null;
 
+                Map<String, String> var2val = new LinkedHashMap<>();
+
+                for(int i=0; i<DBATTRS.length; i++){
+                    var2val.put(DBATTRS[i], "Null");
+                }
+
                 while (attributes.hasNext()) {
                     String var = attributes.next();
                     String val = qs.get(var).toString();
-                    String toAdd = DBpediaParseAny(val, var);
+
+                    String toAdd = ParseAny(val, var);
+
+                    if (toAdd.equals("")){
+                        toAdd = "Null";
+                    }
+
+                    var2val.replace(var, toAdd);
+
 
                     if(var.equals(LINK)){
                         ID = toAdd;
                     }
 
-                    values.add(toAdd);
                     logger.info(Tname + " - DBpedia " + n + " [" + var + "]: " + toAdd);
                 }
+
+                values.addAll(var2val.values());
 
                 if(ID != null){
                     fromWiki = extractWikiMovie(ID,n);
@@ -367,7 +400,7 @@ public class QueryMovieData {
 
                 if(!values.isEmpty()){
                     try (
-                            Writer writer = new FileWriter(new File("data/movieDataI.csv"), true);
+                            Writer writer = new FileWriter(new File("data/movies.csv"), true);
                             CSVWriter csvWriter = new CSVWriter(writer);
                     ) {
                             csvWriter.writeNext(values.toArray(new String[0]));
@@ -387,6 +420,11 @@ public class QueryMovieData {
 
             ResultSet rs = qexecution.execSelect();
 
+            Map<String, String> var2val = new LinkedHashMap<>();
+            for(int i=0; i<WIKIATTRS.length; i++){
+                var2val.put(WIKIATTRS[i], "Null");
+            }
+
             List<String> fromWiki = new ArrayList<String>();
 
             if (rs.hasNext()) {
@@ -396,10 +434,19 @@ public class QueryMovieData {
                 while (attributes.hasNext()) {
                     String var = attributes.next();
                     String val = qs.get(var).toString();
-                    fromWiki.add(val);
+
+                    String toAdd = ParseAny(val, var);
+
+                    if(toAdd.equals("")){
+                        toAdd = "Null";
+                    }
+
+                    var2val.replace(var, toAdd);
+
 
                     logger.info(Tname + " - Wikidata " + n + " [" + var + "]: " + val);
                 }
+                fromWiki.addAll(var2val.values());
             }
             qexecution.close();
             return fromWiki;
