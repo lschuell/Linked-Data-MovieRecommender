@@ -36,6 +36,8 @@ public class Movie extends AbstractRecord<Attribute> implements Serializable {
     private List<String> actorsDP;
 
 
+
+
     public Movie(String identifier, String provenance) {
         id = identifier;
         this.provenance = provenance;

@@ -70,8 +70,8 @@ public class CSVMovieReader extends CSVMatchableReader<Movie, Attribute>{
 
         else {
             if (values.length == 18 || values.length == 24) {
-                Movie m = new Movie("Movie " + rowNumber, file.getAbsolutePath());
-                //Movie m = new Movie(values[0], file.getAbsolutePath());
+                //Movie m = new Movie("Movie " + rowNumber, file.getAbsolutePath());
+                Movie m = new Movie(values[0], file.getAbsolutePath());
 
                 m.setName(values[0]);
                 m.setBudget(parseLong(values[2]));

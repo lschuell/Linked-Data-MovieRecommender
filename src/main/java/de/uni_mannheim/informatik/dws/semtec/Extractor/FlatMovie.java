@@ -29,6 +29,7 @@ public class FlatMovie implements Serializable {
     private String countries;
     private String nominations;
     private String awards;
+    private String top10Recommendations;
 
 
     public String getName() {
@@ -190,6 +191,12 @@ public class FlatMovie implements Serializable {
     public int getYear() { return year; }
 
     public void setYear(int year) { this.year = year; }
+
+    public String getTop10Recommendations() { return top10Recommendations; }
+
+    public void setTop10Recommendations(String top10Recommendations) {this.top10Recommendations = top10Recommendations; }
+
+
 
 
     public static FlatMovie MovieToFlatMovie(Movie m){
