@@ -15,8 +15,7 @@ import org.apache.logging.log4j.Logger;
 import de.uni_mannheim.informatik.dws.winter.matching.blockers.NoBlocker;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 public class LinearCombinationRule {
@@ -74,7 +73,27 @@ public class LinearCombinationRule {
 
 
         // write the correspondences to the output files
-        new CSVCorrespondenceFormatter().writeCSV(new File("data/output/test_recommendations.csv"), correspondences);
+        //new CSVCorrespondenceFormatter().writeCSV(new File("data/output/test_recommendations.csv"), correspondences);
+
+        List<Correspondence<Movie, Attribute>> correspondencesList = (List) correspondences.get();
+
+        Collections.sort(correspondencesList, (Comparator<Correspondence>) (o1, o2) -> -Double.compare(o1.getSimilarityScore(), o2.getSimilarityScore()));
+
+        String[] topResults = new String[10]; int i = -1;
+
+        for (Object elem: correspondencesList) {
+            if(i >= topResults.length)
+                break;
+            // dismiss first entry
+            if(i != -1) {
+                Correspondence<Movie, Attribute> x = (Correspondence) elem;
+                topResults[i] = x.getSecondRecord().getName();
+                System.out.println(topResults[i]);
+            }
+            //System.out.println(x.getFirstRecord() + ", " + x.getSecondRecord() + ", " + x.getSimilarityScore());
+            ++i;
+        }
+
 
     }
 }
