@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Main-Class: de.uni_mannheim.informatik.dws.semtec.Recommender.Models.L
+ inearCombinationRule
+Archiver-Version: Plexus Archiver
+Built-By: pja
+Created-By: Apache Maven
+Build-Jdk: 1.7.0_21
+
